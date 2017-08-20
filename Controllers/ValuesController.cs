@@ -3,12 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using ESPL.MailService.Services;
 
 namespace ESPL.MailService.Controllers
 {
     [Route("api/[controller]")]
     public class ValuesController : Controller
     {
+        private readonly IEmailSender _emailSender;
+        public ValuesController(IEmailSender emailSender)
+        {
+            _emailSender = emailSender;
+        }
+
+        
+
         // GET api/values
         [HttpGet]
         public IEnumerable<string> Get()
@@ -18,9 +27,11 @@ namespace ESPL.MailService.Controllers
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            await _emailSender.SendEmailAsync("mane.shrikant55@gmail.com", "Sub - Async Email","This is first email");
+            return Ok();
+           // return "value";
         }
 
         // POST api/values
@@ -40,5 +51,6 @@ namespace ESPL.MailService.Controllers
         public void Delete(int id)
         {
         }
+
     }
 }
