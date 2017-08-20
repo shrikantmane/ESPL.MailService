@@ -1,0 +1,10 @@
+F:\ESPL\POC\ESPL.MailService\bin\Debug\netcoreapp2.0\ESPL.MailService.deps.json
+F:\ESPL\POC\ESPL.MailService\bin\Debug\netcoreapp2.0\ESPL.MailService.runtimeconfig.json
+F:\ESPL\POC\ESPL.MailService\bin\Debug\netcoreapp2.0\ESPL.MailService.runtimeconfig.dev.json
+F:\ESPL\POC\ESPL.MailService\bin\Debug\netcoreapp2.0\ESPL.MailService.dll
+F:\ESPL\POC\ESPL.MailService\bin\Debug\netcoreapp2.0\ESPL.MailService.pdb
+F:\ESPL\POC\ESPL.MailService\obj\Debug\netcoreapp2.0\ESPL.MailService.csproj.CoreCompileInputs.cache
+F:\ESPL\POC\ESPL.MailService\obj\Debug\netcoreapp2.0\ESPL.MailService.AssemblyInfoInputs.cache
+F:\ESPL\POC\ESPL.MailService\obj\Debug\netcoreapp2.0\ESPL.MailService.AssemblyInfo.cs
+F:\ESPL\POC\ESPL.MailService\obj\Debug\netcoreapp2.0\ESPL.MailService.dll
+F:\ESPL\POC\ESPL.MailService\obj\Debug\netcoreapp2.0\ESPL.MailService.pdb
