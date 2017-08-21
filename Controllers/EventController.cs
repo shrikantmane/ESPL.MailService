@@ -136,37 +136,62 @@ namespace ESPL.MailService.Controllers
                         return StatusCode(400, "Event 'endTime' should be greater than 'startTime'");
                     }
 
-                    // if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.eventDescription))
-                    // {
-                    //     return StatusCode(404, "Please specify 'eventDescription'");
-                    // }
-                    // if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.location))
-                    // {
-                    //     return StatusCode(404, "Please specify event 'location'");
-                    // }
+                    string strRegex = @"^\s*(([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)(\s*,\s*|\s*$))*$";
+                System.Text.RegularExpressions.Regex regX = new System.Text.RegularExpressions.Regex(strRegex);
+                 
+                //validate email addresses of 'to' users
+                string[] toAdrs = eventWrapper.eventOptions.to.Split(',');
+                if (toAdrs.Count() > 1)
+                {
+                    foreach (var item in toAdrs)
+                    {
+                        if (!regX.IsMatch(item))
+                            return StatusCode(400, "Invalid 'to' address of" + " " + item);
+                    }
+                }
+                else if (toAdrs.Count() == 1)
+                {
+                    if (!regX.IsMatch(eventWrapper.eventOptions.to))
+                            return StatusCode(400, "Invalid 'to' address of" + " " + eventWrapper.eventOptions.to);
+                }
 
-                    //valid email addresses of 'to' users
-                    string[] adrs = eventWrapper.eventOptions.to.Split(',');
-                    if (adrs.Count() > 1)
+                //validate email addresses of 'cc' users
+                if(eventWrapper.eventOptions.cc != null)
                     {
-                        //      int index = adrs.Length - 1;
-                        // System.Net.Mail.MailAddress parsedAddress = MailAddressParser.ParseAddress(adrs, false, ref index);
-                        // //Debug.Assert(index == -1, "The index indicates that part of the address was not parsed: " + index);
-                        // if(index == -1)
-                        //     return StatusCode(500,parsedAddress);
-                        // else
-                    }
-                    else if (adrs.Count() == 1)
+                string[] ccAdrs = eventWrapper.eventOptions.cc.Split(',');
+                if (ccAdrs.Count() > 1)
+                {
+                    foreach (var item in ccAdrs)
                     {
-                        try
-                        {
-                            var addr = new System.Net.Mail.MailAddress(eventWrapper.eventOptions.to);
-                        }
-                        catch (System.Exception ex)
-                        {
-                            return StatusCode(400, "Invalid 'to' address");
-                        }
+                        if (!regX.IsMatch(item))
+                            return StatusCode(400, "Invalid 'cc' address of" + " " + item);
                     }
+                }
+                else if (ccAdrs.Count() == 1)
+                {
+                    if (!regX.IsMatch(eventWrapper.eventOptions.cc))
+                            return StatusCode(400, "Invalid 'cc' address of" + " " + eventWrapper.eventOptions.cc);
+                }
+                    }
+
+                 //validate email addresses of 'bcc' users   
+                if(eventWrapper.eventOptions.bcc != null)
+                                {
+                            string[] bccAdrs = eventWrapper.eventOptions.bcc.Split(',');
+                            if (bccAdrs.Count() > 1)
+                            {
+                                foreach (var item in bccAdrs)
+                                {
+                                    if (!regX.IsMatch(item))
+                                        return StatusCode(400, "Invalid 'bcc' address of" + " " + item);
+                                }
+                            }
+                            else if (bccAdrs.Count() == 1)
+                            {
+                                if (!regX.IsMatch(eventWrapper.eventOptions.bcc))
+                                        return StatusCode(400, "Invalid 'bcc' address of" + " " + eventWrapper.eventOptions.bcc);
+                            }
+                                }
                     #endregion Validations
 
                     try

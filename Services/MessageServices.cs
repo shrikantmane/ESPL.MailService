@@ -211,14 +211,13 @@ namespace ESPL.MailService.Services
                 if (hasPlainText)
                 {
                     bodyBuilder.TextBody = mailOptions.plainTextMessage;
+                    m.Body = bodyBuilder.ToMessageBody();
                 }
 
                 if (hasHtml)
                 {
-                    bodyBuilder.HtmlBody = mailOptions.htmlMessage;
+                    m.Body = new TextPart ("html") { Text = mailOptions.htmlMessage };
                 }
-
-                m.Body = bodyBuilder.ToMessageBody();
 
                 return m;
             }
