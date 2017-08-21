@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ESPL.MailService.Models;
-using MailKit.Net.Smtp;
 using MailKit;
-using MimeKit;
+using System.IO;
 
 namespace ESPL.MailService.Services
 {
@@ -16,7 +15,7 @@ namespace ESPL.MailService.Services
     // For more details see this link https://go.microsoft.com/fwlink/?LinkID=532713
     public class MessageSender : IEmailSender
     {
-        public async Task SendEmailAsync(MimeMessage mimeMessage,SMTPOptions smtpOpt)
+        public async Task SendEmailAsync(MimeMessage mimeMessage, SMTPOptions smtpOpt)
         {
             try
             {
@@ -38,17 +37,17 @@ namespace ESPL.MailService.Services
         }
 
         public MimeMessage generateEventBody(EventOptions eventOptions)
-            {
-                var m = new MimeMessage();
+        {
+            var m = new MimeMessage();
             try
             {
- m.From.Add(new MailboxAddress("", eventOptions.from));
+                m.From.Add(new MailboxAddress("", eventOptions.from));
                 if (!string.IsNullOrWhiteSpace(eventOptions.replyTo))
                 {
                     m.ReplyTo.Add(new MailboxAddress("", eventOptions.replyTo));
                 }
 
-//'to' users addition
+                //'to' users addition
                 string[] adrs = eventOptions.to.Split(',');
                 if (adrs.Count() > 1)
                 {
@@ -63,37 +62,42 @@ namespace ESPL.MailService.Services
                 }
 
                 //'cc' users addition
- string[] ccAdrs = eventOptions.cc.Split(',');
-                if (ccAdrs.Count() > 1)
+                if (eventOptions.cc != null)
                 {
-                    foreach (string item in ccAdrs)
+                    string[] ccAdrs = eventOptions.cc.Split(',');
+                    if (ccAdrs.Count() > 1)
                     {
-                        if (!string.IsNullOrEmpty(item)) { m.Cc.Add(new MailboxAddress("", item)); ; }
+                        foreach (string item in ccAdrs)
+                        {
+                            if (!string.IsNullOrEmpty(item)) { m.Cc.Add(new MailboxAddress("", item)); ; }
+                        }
                     }
-                }
-                else if (ccAdrs.Count() == 1)
-                {
-                    m.Cc.Add(new MailboxAddress("", eventOptions.cc));
+                    else if (ccAdrs.Count() == 1)
+                    {
+                        m.Cc.Add(new MailboxAddress("", eventOptions.cc));
+                    }
                 }
 
                 //'bcc' users addition
- string[] bccAdrs = eventOptions.bcc.Split(',');
-                if (bccAdrs.Count() > 1)
+                if (eventOptions.bcc != null)
                 {
-                    foreach (string item in bccAdrs)
+                    string[] bccAdrs = eventOptions.bcc.Split(',');
+                    if (bccAdrs.Count() > 1)
                     {
-                        if (!string.IsNullOrEmpty(item)) { m.Bcc.Add(new MailboxAddress("", item)); ; }
+                        foreach (string item in bccAdrs)
+                        {
+                            if (!string.IsNullOrEmpty(item)) { m.Bcc.Add(new MailboxAddress("", item)); ; }
+                        }
+                    }
+                    else if (bccAdrs.Count() == 1)
+                    {
+                        m.Bcc.Add(new MailboxAddress("", eventOptions.bcc));
                     }
                 }
-                else if (bccAdrs.Count() == 1)
-                {
-                    m.Bcc.Add(new MailboxAddress("", eventOptions.bcc));
-                }
-
 
                 m.Subject = eventOptions.subject;
 
-               m.Importance = MessageImportance.Normal;
+                m.Importance = MessageImportance.Normal;
 
                 BodyBuilder bodyBuilder = new BodyBuilder();
 
@@ -135,14 +139,14 @@ namespace ESPL.MailService.Services
             {
                 throw ex;
             }
-            }
+        }
 
-            public MimeMessage generateMailBody(MailOptions mailOptions)
-            {
-                var m = new MimeMessage();
+        public MimeMessage generateMailBody(MailOptions mailOptions)
+        {
+            var m = new MimeMessage();
             try
             {
-var hasPlainText = !string.IsNullOrWhiteSpace(mailOptions.plainTextMessage);
+                var hasPlainText = !string.IsNullOrWhiteSpace(mailOptions.plainTextMessage);
                 var hasHtml = !string.IsNullOrWhiteSpace(mailOptions.htmlMessage);
 
 
@@ -152,7 +156,7 @@ var hasPlainText = !string.IsNullOrWhiteSpace(mailOptions.plainTextMessage);
                     m.ReplyTo.Add(new MailboxAddress("", mailOptions.replyTo));
                 }
 
-//'to' users addition
+                //'to' users addition
                 string[] toAdrs = mailOptions.to.Split(',');
                 if (toAdrs.Count() > 1)
                 {
@@ -165,34 +169,39 @@ var hasPlainText = !string.IsNullOrWhiteSpace(mailOptions.plainTextMessage);
                 {
                     m.To.Add(new MailboxAddress("", mailOptions.to));
                 }
-//'cc' users addition
- string[] ccAdrs = mailOptions.cc.Split(',');
-                if (ccAdrs.Count() > 1)
+                //'cc' users addition
+                if (mailOptions.cc != null)
                 {
-                    foreach (string item in ccAdrs)
+                    string[] ccAdrs = mailOptions.cc.Split(',');
+                    if (ccAdrs.Count() > 1)
                     {
-                        if (!string.IsNullOrEmpty(item)) { m.Cc.Add(new MailboxAddress("", item)); ; }
+                        foreach (string item in ccAdrs)
+                        {
+                            if (!string.IsNullOrEmpty(item)) { m.Cc.Add(new MailboxAddress("", item)); ; }
+                        }
                     }
-                }
-                else if (ccAdrs.Count() == 1)
-                {
-                    m.Cc.Add(new MailboxAddress("", mailOptions.cc));
+                    else if (ccAdrs.Count() == 1)
+                    {
+                        m.Cc.Add(new MailboxAddress("", mailOptions.cc));
+                    }
                 }
 
                 //'bcc' users addition
- string[] bccAdrs = mailOptions.bcc.Split(',');
-                if (bccAdrs.Count() > 1)
+                if (mailOptions.bcc != null)
                 {
-                    foreach (string item in bccAdrs)
+                    string[] bccAdrs = mailOptions.bcc.Split(',');
+                    if (bccAdrs.Count() > 1)
                     {
-                        if (!string.IsNullOrEmpty(item)) { m.Bcc.Add(new MailboxAddress("", item)); ; }
+                        foreach (string item in bccAdrs)
+                        {
+                            if (!string.IsNullOrEmpty(item)) { m.Bcc.Add(new MailboxAddress("", item)); ; }
+                        }
+                    }
+                    else if (bccAdrs.Count() == 1)
+                    {
+                        m.Bcc.Add(new MailboxAddress("", mailOptions.bcc));
                     }
                 }
-                else if (bccAdrs.Count() == 1)
-                {
-                    m.Bcc.Add(new MailboxAddress("", mailOptions.bcc));
-                }
-
                 m.Subject = mailOptions.subject;
 
                 m.Importance = MessageImportance.Normal;
@@ -201,14 +210,36 @@ var hasPlainText = !string.IsNullOrWhiteSpace(mailOptions.plainTextMessage);
                 if (hasPlainText)
                 {
                     bodyBuilder.TextBody = mailOptions.plainTextMessage;
+                    m.Body = bodyBuilder.ToMessageBody();
                 }
-
+                var multipart = new Multipart("mixed");
+                if (hasPlainText)
+                {
+                    var plaintextbody = new TextPart("plain")
+                    {
+                        Text = mailOptions.plainTextMessage
+                    };
+                     multipart.Add(plaintextbody);
+                }
                 if (hasHtml)
                 {
-                    bodyBuilder.HtmlBody = mailOptions.htmlMessage;
+                   var htmlbody  = new TextPart("html") { Text = mailOptions.htmlMessage };
+                   multipart.Add(htmlbody);
                 }
-
-                m.Body = bodyBuilder.ToMessageBody();
+                if (mailOptions.attachment != null)
+                {
+                    byte[] newBytes = mailOptions.attachment;
+                    MemoryStream ms = new MemoryStream(newBytes);
+                    var attachment = new MimePart("image", "gif")
+                    {
+                        ContentObject = new ContentObject(ms),
+                        ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                        ContentTransferEncoding = ContentEncoding.Base64,
+                        FileName = mailOptions.attachmentName
+                    };
+                    multipart.Add(attachment);
+                }
+                m.Body = multipart;
 
                 return m;
             }
@@ -216,7 +247,7 @@ var hasPlainText = !string.IsNullOrWhiteSpace(mailOptions.plainTextMessage);
             {
                 throw ex;
             }
-            }
+        }
 
 
     }

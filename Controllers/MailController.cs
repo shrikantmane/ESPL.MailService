@@ -105,30 +105,63 @@ namespace ESPL.MailService.Controllers
                         return StatusCode(400, "Invalid 'replyTo' address");
                     }
                 }
+                string strRegex = @"^\s*(([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)(\s*,\s*|\s*$))*$";
+                System.Text.RegularExpressions.Regex regX = new System.Text.RegularExpressions.Regex(strRegex);
+                 
+                //validate email addresses of 'to' users
+                string[] toAdrs = mailWrapper.mailOptions.to.Split(',');
+                if (toAdrs.Count() > 1)
+                {
+                    foreach (var item in toAdrs)
+                    {
+                        if (!regX.IsMatch(item))
+                            return StatusCode(400, "Invalid 'to' address of" + " " + item);
+                    }
+                }
+                else if (toAdrs.Count() == 1)
+                {
+                    if (!regX.IsMatch(mailWrapper.mailOptions.to))
+                            return StatusCode(400, "Invalid 'to' address of" + " " + mailWrapper.mailOptions.to);
+                }
 
-                //valid email addresses of 'to' users
-                string[] adrs = mailWrapper.mailOptions.to.Split(',');
-                if (adrs.Count() > 1)
-                {
-                    //      int index = adrs.Length - 1;
-                    // System.Net.Mail.MailAddress parsedAddress = MailAddressParser.ParseAddress(adrs, false, ref index);
-                    // //Debug.Assert(index == -1, "The index indicates that part of the address was not parsed: " + index);
-                    // if(index == -1)
-                    //     return StatusCode(500,parsedAddress);
-                    // else
-                }
-                else if (adrs.Count() == 1)
-                {
-                    try
+                //validate email addresses of 'cc' users
+                if(mailWrapper.mailOptions.cc != null)
                     {
-                        var addr = new System.Net.Mail.MailAddress(mailWrapper.mailOptions.to);
-                    }
-                    catch (System.Exception ex)
+                string[] ccAdrs = mailWrapper.mailOptions.cc.Split(',');
+                if (ccAdrs.Count() > 1)
+                {
+                    foreach (var item in ccAdrs)
                     {
-                        return StatusCode(400, "Invalid 'to' address");
+                        if (!regX.IsMatch(item))
+                            return StatusCode(400, "Invalid 'cc' address of" + " " + item);
                     }
                 }
-                    #endregion Validations
+                else if (ccAdrs.Count() == 1)
+                {
+                    if (!regX.IsMatch(mailWrapper.mailOptions.cc))
+                            return StatusCode(400, "Invalid 'cc' address of" + " " + mailWrapper.mailOptions.cc);
+                }
+                    }
+
+                 //validate email addresses of 'bcc' users   
+                if(mailWrapper.mailOptions.bcc != null)
+                                {
+                            string[] bccAdrs = mailWrapper.mailOptions.bcc.Split(',');
+                            if (bccAdrs.Count() > 1)
+                            {
+                                foreach (var item in bccAdrs)
+                                {
+                                    if (!regX.IsMatch(item))
+                                        return StatusCode(400, "Invalid 'bcc' address of" + " " + item);
+                                }
+                            }
+                            else if (bccAdrs.Count() == 1)
+                            {
+                                if (!regX.IsMatch(mailWrapper.mailOptions.bcc))
+                                        return StatusCode(400, "Invalid 'bcc' address of" + " " + mailWrapper.mailOptions.bcc);
+                            }
+                                }
+                #endregion Validations
 
                     try
                     {
