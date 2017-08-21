@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ESPL.MailService.Models;
-using MailKit.Net.Smtp;
 using MailKit;
-using MimeKit;
+using System.IO;
 
 namespace ESPL.MailService.Services
 {
@@ -213,11 +212,34 @@ namespace ESPL.MailService.Services
                     bodyBuilder.TextBody = mailOptions.plainTextMessage;
                     m.Body = bodyBuilder.ToMessageBody();
                 }
-
+                var multipart = new Multipart("mixed");
+                if (hasPlainText)
+                {
+                    var plaintextbody = new TextPart("plain")
+                    {
+                        Text = mailOptions.plainTextMessage
+                    };
+                     multipart.Add(plaintextbody);
+                }
                 if (hasHtml)
                 {
-                    m.Body = new TextPart ("html") { Text = mailOptions.htmlMessage };
+                   var htmlbody  = new TextPart("html") { Text = mailOptions.htmlMessage };
+                   multipart.Add(htmlbody);
                 }
+                if (mailOptions.attachment != null)
+                {
+                    byte[] newBytes = mailOptions.attachment;
+                    MemoryStream ms = new MemoryStream(newBytes);
+                    var attachment = new MimePart("image", "gif")
+                    {
+                        ContentObject = new ContentObject(ms),
+                        ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                        ContentTransferEncoding = ContentEncoding.Base64,
+                        FileName = mailOptions.attachmentName
+                    };
+                    multipart.Add(attachment);
+                }
+                m.Body = multipart;
 
                 return m;
             }
