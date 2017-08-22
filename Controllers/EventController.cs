@@ -199,7 +199,14 @@ namespace ESPL.MailService.Controllers
                     var m = _emailSender.generateEventBody(eventWrapper.eventOptions);
                     // if (m != null)
                     // {
+                        try
+                    {
                       await _emailSender.SendEmailAsync(m,eventWrapper.smtpOptions);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        return StatusCode(401, "Invalid SMTP Details");
+                    }
                     // }
                     return Ok("Email sent!!");
                     }
