@@ -85,10 +85,10 @@ namespace ESPL.MailService.Controllers
                         }
                     }
 
-                    if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.subject))
-                    {
-                        return StatusCode(404, "'subject' can not be empty");
-                    }
+                    // if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.subject))
+                    // {
+                    //     return StatusCode(404, "'subject' can not be empty");
+                    // }
 
                     if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.replyTo))
                     {
