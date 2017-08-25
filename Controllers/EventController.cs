@@ -25,7 +25,7 @@ namespace ESPL.MailService.Controllers
         {
             try
             {
-                if (eventWrapper != null)
+                if (eventWrapper != null && eventWrapper.smtpOptions != null && eventWrapper.eventOptions != null)
                 {
                     #region Validations
                     if (string.IsNullOrWhiteSpace(eventWrapper.smtpOptions.server))
@@ -85,10 +85,10 @@ namespace ESPL.MailService.Controllers
                         }
                     }
 
-                    if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.subject))
-                    {
-                        return StatusCode(404, "'subject' can not be empty");
-                    }
+                    // if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.subject))
+                    // {
+                    //     return StatusCode(404, "'subject' can not be empty");
+                    // }
 
                     if (string.IsNullOrWhiteSpace(eventWrapper.eventOptions.replyTo))
                     {
@@ -137,78 +137,85 @@ namespace ESPL.MailService.Controllers
                     }
 
                     string strRegex = @"^\s*(([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)(\s*,\s*|\s*$))*$";
-                System.Text.RegularExpressions.Regex regX = new System.Text.RegularExpressions.Regex(strRegex);
-                 
-                //validate email addresses of 'to' users
-                string[] toAdrs = eventWrapper.eventOptions.to.Split(',');
-                if (toAdrs.Count() > 1)
-                {
-                    foreach (var item in toAdrs)
+                    System.Text.RegularExpressions.Regex regX = new System.Text.RegularExpressions.Regex(strRegex);
+
+                    //validate email addresses of 'to' users
+                    string[] toAdrs = eventWrapper.eventOptions.to.Split(',');
+                    if (toAdrs.Count() > 1)
                     {
-                        if (!regX.IsMatch(item))
-                            return StatusCode(400, "Invalid 'to' address of" + " " + item);
+                        foreach (var item in toAdrs)
+                        {
+                            if (!regX.IsMatch(item))
+                                return StatusCode(400, "Invalid 'to' address of" + " " + item);
+                        }
                     }
-                }
-                else if (toAdrs.Count() == 1)
-                {
-                    if (!regX.IsMatch(eventWrapper.eventOptions.to))
+                    else if (toAdrs.Count() == 1)
+                    {
+                        if (!regX.IsMatch(eventWrapper.eventOptions.to))
                             return StatusCode(400, "Invalid 'to' address of" + " " + eventWrapper.eventOptions.to);
-                }
-
-                //validate email addresses of 'cc' users
-                if(eventWrapper.eventOptions.cc != null)
-                    {
-                string[] ccAdrs = eventWrapper.eventOptions.cc.Split(',');
-                if (ccAdrs.Count() > 1)
-                {
-                    foreach (var item in ccAdrs)
-                    {
-                        if (!regX.IsMatch(item))
-                            return StatusCode(400, "Invalid 'cc' address of" + " " + item);
-                    }
-                }
-                else if (ccAdrs.Count() == 1)
-                {
-                    if (!regX.IsMatch(eventWrapper.eventOptions.cc))
-                            return StatusCode(400, "Invalid 'cc' address of" + " " + eventWrapper.eventOptions.cc);
-                }
                     }
 
-                 //validate email addresses of 'bcc' users   
-                if(eventWrapper.eventOptions.bcc != null)
-                                {
-                            string[] bccAdrs = eventWrapper.eventOptions.bcc.Split(',');
-                            if (bccAdrs.Count() > 1)
+                    //validate email addresses of 'cc' users
+                    if (eventWrapper.eventOptions.cc != null)
+                    {
+                        string[] ccAdrs = eventWrapper.eventOptions.cc.Split(',');
+                        if (ccAdrs.Count() > 1)
+                        {
+                            foreach (var item in ccAdrs)
                             {
-                                foreach (var item in bccAdrs)
-                                {
-                                    if (!regX.IsMatch(item))
-                                        return StatusCode(400, "Invalid 'bcc' address of" + " " + item);
-                                }
+                                if (!regX.IsMatch(item))
+                                    return StatusCode(400, "Invalid 'cc' address of" + " " + item);
                             }
-                            else if (bccAdrs.Count() == 1)
+                        }
+                        else if (ccAdrs.Count() == 1)
+                        {
+                            if (!regX.IsMatch(eventWrapper.eventOptions.cc))
+                                return StatusCode(400, "Invalid 'cc' address of" + " " + eventWrapper.eventOptions.cc);
+                        }
+                    }
+
+                    //validate email addresses of 'bcc' users   
+                    if (eventWrapper.eventOptions.bcc != null)
+                    {
+                        string[] bccAdrs = eventWrapper.eventOptions.bcc.Split(',');
+                        if (bccAdrs.Count() > 1)
+                        {
+                            foreach (var item in bccAdrs)
                             {
-                                if (!regX.IsMatch(eventWrapper.eventOptions.bcc))
-                                        return StatusCode(400, "Invalid 'bcc' address of" + " " + eventWrapper.eventOptions.bcc);
+                                if (!regX.IsMatch(item))
+                                    return StatusCode(400, "Invalid 'bcc' address of" + " " + item);
                             }
-                                }
+                        }
+                        else if (bccAdrs.Count() == 1)
+                        {
+                            if (!regX.IsMatch(eventWrapper.eventOptions.bcc))
+                                return StatusCode(400, "Invalid 'bcc' address of" + " " + eventWrapper.eventOptions.bcc);
+                        }
+                    }
                     #endregion Validations
 
                     try
                     {
-                    var m = _emailSender.generateEventBody(eventWrapper.eventOptions);
-                    // if (m != null)
-                    // {
-                      await _emailSender.SendEmailAsync(m,eventWrapper.smtpOptions);
-                    // }
-                    return Ok("Email sent!!");
+                        var m = _emailSender.generateEventBody(eventWrapper.eventOptions);
+                        // if (m != null)
+                        // {
+                        try
+                        {
+                            await _emailSender.SendEmailAsync(m, eventWrapper.smtpOptions);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            return StatusCode(401, "Invalid SMTP Details");
+                        }
+                        // }
+                        return Ok("Email sent!!");
                     }
                     catch (System.Exception ex)
                     {
                         return StatusCode(500, "Something went wrong");
                     }
                 }
-                else if (eventWrapper == null)
+                else
                     return StatusCode(400, "Invalid parameters");
 
             }
@@ -216,7 +223,7 @@ namespace ESPL.MailService.Controllers
             {
                 return StatusCode(500, "Something went wrong");
             }
-            return StatusCode(500, "Can not send email");
+            //return StatusCode(500, "Can not send email");
         }
 
     }
