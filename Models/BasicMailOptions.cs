@@ -13,7 +13,6 @@ namespace ESPL.MailService.Models
         public string from { get; set; }
         public string subject { get; set; }
         public string replyTo { get; set; }
-        public byte[] attachment { get; set; }
-        public string attachmentName { get; set; }
+        public List<MailAttachments> attachments { get; set; }
     }
 }

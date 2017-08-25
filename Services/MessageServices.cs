@@ -113,7 +113,7 @@ namespace ESPL.MailService.Services
                 sb.AppendLine("DTEND:" + eventOptions.endTime.ToUniversalTime().ToString(DateFormat));
                 sb.AppendLine("DTSTAMP:" + now);
                 sb.AppendLine("UID:" + Guid.NewGuid());
-                sb.AppendLine("ORGANIZER;CN= " + "Bharati S" + ":MAILTO:" + "bhartishinde01@gmail.com");
+                sb.AppendLine("ORGANIZER;CN= " + eventOptions.from + ":MAILTO:" + eventOptions.from);
                 sb.AppendLine("CREATED:" + now);
                 sb.AppendLine("X-ALT-DESC;FMTTYPE=text/html:" + eventOptions.eventDescription);
                 sb.AppendLine("LAST-MODIFIED:" + now);
@@ -136,18 +136,21 @@ namespace ESPL.MailService.Services
                 var multipart = new Multipart("mixed");
                 multipart.Add(bodyBuilder.ToMessageBody());
 
-                if (eventOptions.attachment != null)
+                if (eventOptions.attachments != null&& eventOptions.attachments.Count>0)
                 {
-                    byte[] newBytes = eventOptions.attachment;
-                    MemoryStream msAttachment = new MemoryStream(newBytes);
-                    var attachment = new MimePart("image", "gif")
+                    foreach (var item in eventOptions.attachments)
                     {
-                        ContentObject = new ContentObject(msAttachment),
-                        ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-                        ContentTransferEncoding = ContentEncoding.Base64,
-                        FileName = eventOptions.attachmentName
-                    };
-                    multipart.Add(attachment);
+                        byte[] newBytes = item.attachment;
+                        MemoryStream msAttachment = new MemoryStream(newBytes);
+                        var attachment = new MimePart("image", "gif")
+                        {
+                            ContentObject = new ContentObject(msAttachment),
+                            ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                            ContentTransferEncoding = ContentEncoding.Base64,
+                            FileName = item.attachmentName
+                        };
+                        multipart.Add(attachment);
+                    }
                 }
 
                 m.Body = multipart;
@@ -245,18 +248,22 @@ namespace ESPL.MailService.Services
                    var htmlbody  = new TextPart("html") { Text = mailOptions.htmlMessage };
                    multipart.Add(htmlbody);
                 }
-                if (mailOptions.attachment != null)
+                if (mailOptions.attachments != null && mailOptions.attachments.Count>0)
                 {
-                    byte[] newBytes = mailOptions.attachment;
-                    MemoryStream ms = new MemoryStream(newBytes);
-                    var attachment = new MimePart("image", "gif")
+                    foreach (var item in mailOptions.attachments)
                     {
-                        ContentObject = new ContentObject(ms),
-                        ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-                        ContentTransferEncoding = ContentEncoding.Base64,
-                        FileName = mailOptions.attachmentName
-                    };
-                    multipart.Add(attachment);
+                        byte[] newBytes = item.attachment;
+                        MemoryStream ms = new MemoryStream(newBytes);
+                        var attachment = new MimePart("image", "gif")
+                        {
+                            ContentObject = new ContentObject(ms),
+                            ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                            ContentTransferEncoding = ContentEncoding.Base64,
+                            FileName = item.attachmentName
+                        };
+                        multipart.Add(attachment);
+                    }
+                    
                 }
                 m.Body = multipart;
 
