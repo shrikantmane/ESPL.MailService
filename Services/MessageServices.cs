@@ -1,6 +1,7 @@
 using MailKit.Net.Smtp;
 using MimeKit;
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -107,15 +108,16 @@ namespace ESPL.MailService.Services
                 sb.AppendLine("PRODID:-//Compnay Inc//Product Application//EN");
                 sb.AppendLine("VERSION:2.0");
                 sb.AppendLine("METHOD:PUBLISH");
-
                 sb.AppendLine("BEGIN:VEVENT");
                 sb.AppendLine("DTSTART:" + eventOptions.startTime.ToUniversalTime().ToString(DateFormat));
                 sb.AppendLine("DTEND:" + eventOptions.endTime.ToUniversalTime().ToString(DateFormat));
                 sb.AppendLine("DTSTAMP:" + now);
                 sb.AppendLine("UID:" + Guid.NewGuid());
                 sb.AppendLine("ORGANIZER;CN= " + eventOptions.from + ":MAILTO:" + eventOptions.from);
-                sb.AppendLine("CREATED:" + now);
-                sb.AppendLine("X-ALT-DESC;FMTTYPE=text/html:" + eventOptions.eventDescription);
+                sb.AppendLine("CREATED:" + now);                
+                string evDesc = eventOptions.eventDescription.Replace("<br/>", "\\n");
+                string StrippedHTML = StripHTML(evDesc);             
+                sb.AppendLine(string.Format("DESCRIPTION:{0}", StrippedHTML));
                 sb.AppendLine("LAST-MODIFIED:" + now);
                 sb.AppendLine("LOCATION:" + eventOptions.location);
                 sb.AppendLine("SEQUENCE:0");
@@ -123,20 +125,14 @@ namespace ESPL.MailService.Services
                 sb.AppendLine("SUMMARY:" + eventOptions.eventName);
                 sb.AppendLine("TRANSP:OPAQUE");
                 sb.AppendLine("END:VEVENT");
-
                 sb.AppendLine("END:VCALENDAR");
-
                 var calendarBytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
                 System.IO.MemoryStream ms = new System.IO.MemoryStream(calendarBytes);
-
                 BodyBuilder bodyBuilder = new BodyBuilder();
                 bodyBuilder.Attachments.Add("event.ics", ms);
-                //m.Body = bodyBuilder.ToMessageBody();
-
                 var multipart = new Multipart("mixed");
                 multipart.Add(bodyBuilder.ToMessageBody());
-
-                if (eventOptions.attachments != null&& eventOptions.attachments.Count>0)
+                if (eventOptions.attachments != null && eventOptions.attachments.Count > 0)
                 {
                     foreach (var item in eventOptions.attachments)
                     {
@@ -152,9 +148,7 @@ namespace ESPL.MailService.Services
                         multipart.Add(attachment);
                     }
                 }
-
                 m.Body = multipart;
-
                 return m;
             }
             catch (Exception ex)
@@ -241,14 +235,14 @@ namespace ESPL.MailService.Services
                     {
                         Text = mailOptions.plainTextMessage
                     };
-                     multipart.Add(plaintextbody);
+                    multipart.Add(plaintextbody);
                 }
                 if (hasHtml)
                 {
-                   var htmlbody  = new TextPart("html") { Text = mailOptions.htmlMessage };
-                   multipart.Add(htmlbody);
+                    var htmlbody = new TextPart("html") { Text = mailOptions.htmlMessage };
+                    multipart.Add(htmlbody);
                 }
-                if (mailOptions.attachments != null && mailOptions.attachments.Count>0)
+                if (mailOptions.attachments != null && mailOptions.attachments.Count > 0)
                 {
                     foreach (var item in mailOptions.attachments)
                     {
@@ -263,7 +257,7 @@ namespace ESPL.MailService.Services
                         };
                         multipart.Add(attachment);
                     }
-                    
+
                 }
                 m.Body = multipart;
 
@@ -274,7 +268,10 @@ namespace ESPL.MailService.Services
                 throw ex;
             }
         }
-
+        public static string StripHTML(string input)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(input, "<.*?>", String.Empty);
+        }
 
     }
 }
